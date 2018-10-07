@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="zukkey.whiskey.com.arcoresamplefortechbookfest">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
+    android:value="true" />
+
+  <uses-permission android:name="android.permission.CAMERA" />
+  <uses-feature android:name="android.hardware.camera" />
+  <uses-feature android:name="android.hardware.camera.ar" android:required="true"/>
 
   <application
     android:allowBackup="true"
@@ -9,6 +16,8 @@
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
+    <meta-data android:name="com.google.ar.core" android:value="required" />
+
     <activity android:name=".MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -16,6 +25,10 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+    <activity android:name=".ModelActivity"/>
+    <activity android:name=".ViewActivity"/>
+    <activity android:name=".WebActivity"/>
+    <activity android:name=".AugmentedImageActivity"/>
   </application>
 
 </manifest>
