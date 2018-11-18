@@ -48,6 +48,8 @@ dependencies {
     // Timber for Log
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
+    implementation 'com.google.firebase:firebase-core:16.0.1'
+
     // Obj - a simple Wavefront OBJ file loader
     // https://github.com/javagl/Obj
     implementation 'de.javagl:obj:0.2.1'
@@ -70,3 +72,5 @@ sceneform.asset('sampledata/R1N4_V2_FREE.obj',
         'default',
         'sampledata/R1N4_V2_FREE.sfa',
         'src/main/res/raw/rin')
+
+apply plugin: 'com.google.gms.google-services'
