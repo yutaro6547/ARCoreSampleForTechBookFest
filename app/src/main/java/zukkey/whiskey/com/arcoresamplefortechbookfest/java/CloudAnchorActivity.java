@@ -1,8 +1,10 @@
-package zukkey.whiskey.com.arcoresamplefortechbookfest;
+package zukkey.whiskey.com.arcoresamplefortechbookfest.java;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+
+import zukkey.whiskey.com.arcoresamplefortechbookfest.R;
 
 public class CloudAnchorActivity extends AppCompatActivity{
 

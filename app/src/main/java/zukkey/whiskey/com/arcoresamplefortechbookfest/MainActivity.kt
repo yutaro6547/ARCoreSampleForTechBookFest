@@ -3,8 +3,10 @@ package zukkey.whiskey.com.arcoresamplefortechbookfest
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.google.firebase.provider.FirebaseInitProvider
 import zukkey.whiskey.com.arcoresamplefortechbookfest.databinding.ActivityMainBinding
+import zukkey.whiskey.com.arcoresamplefortechbookfest.java.AugmentedImageActivity
+import zukkey.whiskey.com.arcoresamplefortechbookfest.java.ModelActivity
+import zukkey.whiskey.com.arcoresamplefortechbookfest.java.ViewActivity
 
 class MainActivity : AppCompatActivity() {
 

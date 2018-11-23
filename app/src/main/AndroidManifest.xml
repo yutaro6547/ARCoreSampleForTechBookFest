@@ -20,7 +20,7 @@
     <meta-data
       android:name="com.google.android.ar.API_KEY"
       android:value="YOURAPIKEY"/>
-    
+
     <activity android:name=".MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -28,11 +28,16 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <activity android:name=".ModelActivity"/>
-    <activity android:name=".ViewActivity"/>
-    <activity android:name=".WebActivity"/>
-    <activity android:name=".AugmentedImageActivity"/>
-    <activity android:name=".CloudAnchorActivity"/>
+    <activity android:name=".java.ModelActivity"/>
+    <activity android:name=".java.ViewActivity"/>
+    <activity android:name=".java.WebActivity"/>
+    <activity android:name=".java.AugmentedImageActivity"/>
+    <activity android:name=".java.CloudAnchorActivity"/>
+    <activity android:name=".kotlin.ModelActivity"/>
+    <activity android:name=".kotlin.ViewActivity"/>
+    <activity android:name=".kotlin.WebActivity"/>
+    <activity android:name=".kotlin.AugmentedImageActivity"/>
+    <activity android:name=".kotlin.CloudAnchorActivity"/>
   </application>
 
 </manifest>

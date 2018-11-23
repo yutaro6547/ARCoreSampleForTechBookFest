@@ -1,4 +1,4 @@
-package zukkey.whiskey.com.arcoresamplefortechbookfest;
+package zukkey.whiskey.com.arcoresamplefortechbookfest.java;
 
 import android.Manifest;
 import android.content.Context;
@@ -19,6 +19,8 @@ import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
+
+import zukkey.whiskey.com.arcoresamplefortechbookfest.R;
 
 public class ViewActivity extends AppCompatActivity {
   private static final int CAMERA_PERMISSION_CODE = 0;

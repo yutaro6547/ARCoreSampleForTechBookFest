@@ -1,4 +1,4 @@
-package zukkey.whiskey.com.arcoresamplefortechbookfest;
+package zukkey.whiskey.com.arcoresamplefortechbookfest.java;
 
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +28,8 @@ import com.google.ar.sceneform.ux.TransformableNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+
+import zukkey.whiskey.com.arcoresamplefortechbookfest.R;
 
 public class AugmentedImageActivity extends AppCompatActivity {
   private ViewRenderable textViewRenderable;
