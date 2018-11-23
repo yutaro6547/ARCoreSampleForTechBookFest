@@ -17,7 +17,10 @@
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
     <meta-data android:name="com.google.ar.core" android:value="required" />
-
+    <meta-data
+      android:name="com.google.android.ar.API_KEY"
+      android:value="YOURAPIKEY"/>
+    
     <activity android:name=".MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
