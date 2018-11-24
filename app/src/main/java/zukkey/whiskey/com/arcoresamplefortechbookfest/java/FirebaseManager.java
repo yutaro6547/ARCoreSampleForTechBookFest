@@ -1,6 +1,10 @@
 package zukkey.whiskey.com.arcoresamplefortechbookfest.java;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.widget.Toast;
+
 import com.google.ar.sceneform.utilities.Preconditions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
@@ -54,32 +58,32 @@ public class FirebaseManager {
   }
 
   // ホストした時にインクリメントして、アンカーを設置する
-  void getNewRoomCode(RoomCodeListener listener) {
+  void createNewRoom(RoomCodeListener listener, Long newRoomCode) {
     Preconditions.checkNotNull(app, "Firebase App was null");
+    if (newRoomCode == null) {
+      Toast.makeText(app.getApplicationContext(), "New Room Code is null.", Toast.LENGTH_SHORT).show();
+      return;
+    }
+
     roomCodeRef.runTransaction(
         new Transaction.Handler() {
+          @NonNull
           @Override
-          public Transaction.Result doTransaction(MutableData currentData) {
-            Long nextCode = Long.valueOf(1);
-            Object currVal = currentData.getValue();
-            if (currVal != null) {
-              Long lastCode = Long.valueOf(currVal.toString());
-              nextCode = lastCode + 1;
-            }
-            currentData.setValue(nextCode);
-            return Transaction.success(currentData);
+          public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+            mutableData.setValue(newRoomCode);
+            return Transaction.success(mutableData);
           }
 
           @Override
-          public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
-            if (!committed) {
-              listener.onError(error);
+          public void onComplete(@Nullable DatabaseError databaseError, boolean completed, @Nullable DataSnapshot dataSnapshot) {
+            if (!completed) {
+              listener.onError(databaseError);
               return;
             }
-            Long roomCode = currentData.getValue(Long.class);
-            listener.onNewRoomCode(roomCode);
+            listener.onNewRoomCode(dataSnapshot.getValue(Long.class));
           }
-        });
+        }
+    );
   }
 
   void storeAnchorIdInRoom(Long roomCode, String cloudAnchorId) {

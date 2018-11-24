@@ -12,6 +12,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"/>
 
+  <TextView
+    android:id="@+id/room_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textSize="32sp"
+    android:gravity="center"
+    android:text="@string/default_room"
+    android:textColor="@android:color/black"
+    android:background="@android:color/white"
+    />
+
 
   <android.support.design.widget.FloatingActionButton
     android:id="@+id/search_button"
@@ -20,17 +31,38 @@
     android:layout_margin="16dp"
     android:src="@drawable/ic_search"
     app:fabSize="normal"
-    app:layout_constraintBottom_toTopOf="@+id/host_button"
+    app:layout_constraintBottom_toTopOf="@+id/create_container"
     app:layout_constraintRight_toRightOf="parent"/>
 
-  <android.support.design.widget.FloatingActionButton
-    android:id="@+id/host_button"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_margin="16dp"
-    android:src="@drawable/ic_add"
-    app:fabSize="normal"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintRight_toRightOf="parent"/>
+
+  <LinearLayout
+    android:id="@+id/create_container"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:orientation="horizontal"
+    android:gravity="center"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent">
+
+    <EditText
+      android:id="@+id/room_code_edit"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:inputType="number"
+      android:layout_weight="2"
+      android:textColor="@android:color/black"
+      android:background="@android:color/white"
+      android:hint="好きな数字を入力してください"/>
+
+    <Button
+      android:id="@+id/send_button"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_weight="1"
+      android:background="@android:color/darker_gray"
+      android:text="送信"/>
+
+  </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
