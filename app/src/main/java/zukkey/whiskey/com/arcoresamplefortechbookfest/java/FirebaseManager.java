@@ -57,8 +57,7 @@ public class FirebaseManager {
     }
   }
 
-  // ホストした時にインクリメントして、アンカーを設置する
-  void createNewRoom(RoomCodeListener listener, Long newRoomCode) {
+  void createNewRoom(Long newRoomCode, RoomCodeListener listener) {
     Preconditions.checkNotNull(app, "Firebase App was null");
     if (newRoomCode == null) {
       Toast.makeText(app.getApplicationContext(), "New Room Code is null.", Toast.LENGTH_SHORT).show();
@@ -112,7 +111,7 @@ public class FirebaseManager {
 
           @Override
           public void onCancelled(DatabaseError databaseError) {
-            Timber.w("The Firebase operation was cancelled.", databaseError.toException());
+            Timber.e(databaseError.getMessage(), databaseError);
           }
         };
     currentRoomRef.addValueEventListener(currentRoomListener);

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import zukkey.whiskey.com.arcoresamplefortechbookfest.databinding.ActivityMainBinding
 import zukkey.whiskey.com.arcoresamplefortechbookfest.java.AugmentedImageActivity
+import zukkey.whiskey.com.arcoresamplefortechbookfest.java.CloudAnchorActivity
 import zukkey.whiskey.com.arcoresamplefortechbookfest.java.ModelActivity
 import zukkey.whiskey.com.arcoresamplefortechbookfest.java.ViewActivity
 
@@ -27,6 +28,10 @@ class MainActivity : AppCompatActivity() {
 
       transitionArgumentedImage.setOnClickListener {
         startActivity(AugmentedImageActivity.createIntent(this@MainActivity))
+      }
+
+      transitionCloudAnchor.setOnClickListener {
+        startActivity(CloudAnchorActivity.createIntent(this@MainActivity))
       }
     }
   }
