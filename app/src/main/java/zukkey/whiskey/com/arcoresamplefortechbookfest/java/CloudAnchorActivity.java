@@ -9,11 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.TransformableNode;
 import com.google.firebase.database.DatabaseError;
@@ -29,6 +31,10 @@ public class CloudAnchorActivity extends AppCompatActivity{
   public AnchorState anchorState;
   private FirebaseManager firebaseManager;
   private ViewRenderable memoViewRenderable;
+  private EditText inputCodeForm;
+  private TextView header;
+  private ProgressBar progressBar;
+  private Long inputCode = 0L;
 
   public static Intent createIntent(Context context) {
     return new Intent(context, CloudAnchorActivity.class);
@@ -40,8 +46,9 @@ public class CloudAnchorActivity extends AppCompatActivity{
     setContentView(R.layout.activity_cloud_anchor);
     setUpArFragment();
 
-    EditText inputCodeForm = findViewById(R.id.room_code_edit);
-    TextView header = findViewById(R.id.room_header);
+    inputCodeForm = findViewById(R.id.room_code_edit);
+    header = findViewById(R.id.room_header);
+    progressBar = findViewById(R.id.progress_bar);
 
     firebaseManager = new FirebaseManager(this);
     anchorState = AnchorState.None.INSTANCE;
@@ -55,23 +62,9 @@ public class CloudAnchorActivity extends AppCompatActivity{
 
     Button sendButton = findViewById(R.id.send_button);
     sendButton.setOnClickListener(view -> {
-      Long inputCode = Long.parseLong(inputCodeForm.getText().toString());
-      firebaseManager.createNewRoom(inputCode, new FirebaseManager.RoomCodeListener() {
-        @Override
-        public void onNewRoomCode(Long newRoomCode) {
-          if (newRoomCode == null) {
-            Toast.makeText(CloudAnchorActivity.this, "Room Code is null.", Toast.LENGTH_SHORT).show();
-          }
-          header.setText(String.valueOf(newRoomCode));
-        }
-
-        @Override
-        public void onError(DatabaseError databaseError) {
-          Toast.makeText(CloudAnchorActivity.this, "Database error.", Toast.LENGTH_SHORT).show();
-          Timber.e(databaseError.getMessage(), databaseError);
-          header.setText(R.string.default_room);
-        }
-      });
+      inputCode = Long.parseLong(inputCodeForm.getText().toString());
+      inputCodeForm.getText().clear();
+      Toast.makeText(this, "Planeをタップしてください", Toast.LENGTH_SHORT).show();
     });
 
     FloatingActionButton searchButton = findViewById(R.id.search_button);
@@ -84,6 +77,7 @@ public class CloudAnchorActivity extends AppCompatActivity{
       setCloudAnchor(newAnchor);
       setUpRendering(newAnchor, header.getText().toString());
       anchorState = AnchorState.Hosting.INSTANCE;
+      progressBar.setVisibility(View.VISIBLE);
     });
 
   }
@@ -91,29 +85,7 @@ public class CloudAnchorActivity extends AppCompatActivity{
   public void setUpArFragment() {
     arFragment = (CloudAnchorFragment) getSupportFragmentManager().findFragmentById(R.id.ar_fragment);
     arFragment.getPlaneDiscoveryController().hide();
-    arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
-      if (anchorState != AnchorState.Hosting.INSTANCE || anchorState != AnchorState.Searching.INSTANCE) {
-        return;
-      }
-      Anchor.CloudAnchorState state = anchor.getCloudAnchorState();
-      if (anchorState == AnchorState.Hosting.INSTANCE) {
-        if (state.isError()) {
-          Toast.makeText(this, "Error hosting", Toast.LENGTH_SHORT).show();
-          anchorState = AnchorState.None.INSTANCE;
-        } else if (state == Anchor.CloudAnchorState.SUCCESS) {
-          Toast.makeText(this, "Hosting is success!", Toast.LENGTH_SHORT).show();
-          anchorState = AnchorState.Hosted.INSTANCE;
-        }
-      } else if (anchorState == AnchorState.Searching.INSTANCE) {
-        if (state.isError()) {
-          Toast.makeText(this, "Error Searching", Toast.LENGTH_SHORT).show();
-          anchorState = AnchorState.None.INSTANCE;
-        } else if (state == Anchor.CloudAnchorState.SUCCESS) {
-          Toast.makeText(this, "Searched is success!", Toast.LENGTH_SHORT).show();
-          anchorState = AnchorState.Searched.INSTANCE;
-        }
-      }
-    });
+    arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdatingFrame);
   }
 
   public void setCloudAnchor(Anchor newAnchor) {
@@ -149,5 +121,53 @@ public class CloudAnchorActivity extends AppCompatActivity{
     inputText.setOnClickListener(view -> {
       Toast.makeText(getApplicationContext(), "Clicked", Toast.LENGTH_SHORT).show();
     });
+  }
+
+  public synchronized void onUpdatingFrame(FrameTime frameTime){
+    if (anchorState == AnchorState.Hosting.INSTANCE) {
+      Timber.i("Hosting......");
+    }
+    if (anchorState != AnchorState.Hosting.INSTANCE) {
+      Timber.i("Hosting Failed");
+      return;
+    }
+    Anchor.CloudAnchorState state = anchor.getCloudAnchorState();
+    if (anchorState == AnchorState.Hosting.INSTANCE) {
+      if (state.isError()) {
+        Toast.makeText(this, "Error hosting", Toast.LENGTH_SHORT).show();
+        anchorState = AnchorState.None.INSTANCE;
+        progressBar.setVisibility(View.GONE);
+      } else if (state == Anchor.CloudAnchorState.SUCCESS) {
+        Toast.makeText(this, "Hosting is success!", Toast.LENGTH_SHORT).show();
+        firebaseManager.createNewRoom(inputCode, new FirebaseManager.RoomCodeListener() {
+          @Override
+          public void onNewRoomCode(Long newRoomCode) {
+            if (newRoomCode == null) {
+              Toast.makeText(CloudAnchorActivity.this, "Room Code is null.", Toast.LENGTH_SHORT).show();
+            }
+            header.setText(String.valueOf(newRoomCode));
+            firebaseManager.storeAnchorIdInRoom(inputCode, anchor.getCloudAnchorId());
+            progressBar.setVisibility(View.GONE);
+          }
+
+          @Override
+          public void onError(DatabaseError databaseError) {
+            Toast.makeText(CloudAnchorActivity.this, "Database error.", Toast.LENGTH_SHORT).show();
+            Timber.e(databaseError.getMessage(), databaseError);
+            header.setText(R.string.default_room);
+            progressBar.setVisibility(View.GONE);
+          }
+        });
+        anchorState = AnchorState.Hosted.INSTANCE;
+      }
+    } else if (anchorState == AnchorState.Searching.INSTANCE) {
+      if (state.isError()) {
+        Toast.makeText(this, "Error Searching", Toast.LENGTH_SHORT).show();
+        anchorState = AnchorState.None.INSTANCE;
+      } else if (state == Anchor.CloudAnchorState.SUCCESS) {
+        Toast.makeText(this, "Searched is success!", Toast.LENGTH_SHORT).show();
+        anchorState = AnchorState.Searched.INSTANCE;
+      }
+    }
   }
 }
