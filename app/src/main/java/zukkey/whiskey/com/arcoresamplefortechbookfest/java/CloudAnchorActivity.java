@@ -20,11 +20,15 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.TransformableNode;
 import com.google.firebase.database.DatabaseError;
 
+import org.jetbrains.annotations.NotNull;
+
 import timber.log.Timber;
 import zukkey.whiskey.com.arcoresamplefortechbookfest.R;
 import zukkey.whiskey.com.arcoresamplefortechbookfest.misc.AnchorState;
+import zukkey.whiskey.com.arcoresamplefortechbookfest.misc.EditTextDialog;
+import zukkey.whiskey.com.arcoresamplefortechbookfest.misc.SearchDialog;
 
-public class CloudAnchorActivity extends AppCompatActivity{
+public class CloudAnchorActivity extends AppCompatActivity implements SearchDialog.PositiveButtonCallBack, EditTextDialog.EditTextPositiveButtonCallBack {
 
   public CloudAnchorFragment arFragment;
   public Anchor anchor;
@@ -35,6 +39,8 @@ public class CloudAnchorActivity extends AppCompatActivity{
   private TextView header;
   private ProgressBar progressBar;
   private Long inputCode = 0L;
+  private EditText inputText;
+  private String editorMemo;
 
   public static Intent createIntent(Context context) {
     return new Intent(context, CloudAnchorActivity.class);
@@ -49,6 +55,7 @@ public class CloudAnchorActivity extends AppCompatActivity{
     inputCodeForm = findViewById(R.id.room_code_edit);
     header = findViewById(R.id.room_header);
     progressBar = findViewById(R.id.progress_bar);
+    editorMemo = "";
 
     firebaseManager = new FirebaseManager(this);
     anchorState = AnchorState.None.INSTANCE;
@@ -69,13 +76,14 @@ public class CloudAnchorActivity extends AppCompatActivity{
 
     FloatingActionButton searchButton = findViewById(R.id.search_button);
     searchButton.setOnClickListener(view -> {
-      // TODO: 既存のRoomが合った時の処理を書く
+      SearchDialog dialog = new SearchDialog();
+      dialog.show(getSupportFragmentManager(), "Search");
     });
 
     arFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
       Anchor newAnchor = arFragment.getArSceneView().getSession().hostCloudAnchor(hitResult.createAnchor());
       setCloudAnchor(newAnchor);
-      setUpRendering(newAnchor, header.getText().toString());
+      setUpRendering(newAnchor);
       anchorState = AnchorState.Hosting.INSTANCE;
       progressBar.setVisibility(View.VISIBLE);
     });
@@ -96,7 +104,7 @@ public class CloudAnchorActivity extends AppCompatActivity{
     anchorState = AnchorState.None.INSTANCE;
   }
 
-  public void setUpRendering(Anchor newAnchor, String roomCode){
+  public void setUpRendering(Anchor newAnchor){
     ViewRenderable.builder()
         .setView(this, R.layout.item_memo)
         .build()
@@ -116,10 +124,16 @@ public class CloudAnchorActivity extends AppCompatActivity{
     memo.getTranslationController();
     memo.select();
 
-    EditText inputText = memoViewRenderable.getView().findViewById(R.id.memo_edit);
-    inputText.requestFocus();
+    inputText = memoViewRenderable.getView().findViewById(R.id.memo_edit);
+    if (!editorMemo.equals("")) {
+      inputText.setText(editorMemo);
+    }
     inputText.setOnClickListener(view -> {
-      Toast.makeText(getApplicationContext(), "Clicked", Toast.LENGTH_SHORT).show();
+      EditTextDialog dialog = new EditTextDialog();
+      if (inputText.getText() != null || !inputText.getText().toString().equals("")) {
+        dialog.setDefaultText(inputText.getText().toString());
+      }
+      dialog.show(getSupportFragmentManager(), "Edit");
     });
   }
 
@@ -127,7 +141,7 @@ public class CloudAnchorActivity extends AppCompatActivity{
     if (anchorState == AnchorState.Hosting.INSTANCE) {
       Timber.i("Hosting......");
     }
-    if (anchorState != AnchorState.Hosting.INSTANCE) {
+    if (anchorState != AnchorState.Hosting.INSTANCE && anchorState != AnchorState.Searching.INSTANCE) {
       Timber.i("Hosting Failed");
       return;
     }
@@ -146,7 +160,7 @@ public class CloudAnchorActivity extends AppCompatActivity{
               Toast.makeText(CloudAnchorActivity.this, "Room Code is null.", Toast.LENGTH_SHORT).show();
             }
             header.setText(String.valueOf(newRoomCode));
-            firebaseManager.storeAnchorIdInRoom(inputCode, anchor.getCloudAnchorId());
+            firebaseManager.storeAnchorIdInRoom(inputCode, anchor.getCloudAnchorId(), editorMemo);
             progressBar.setVisibility(View.GONE);
           }
 
@@ -169,5 +183,30 @@ public class CloudAnchorActivity extends AppCompatActivity{
         anchorState = AnchorState.Searched.INSTANCE;
       }
     }
+  }
+
+  @Override
+  public void onPositiveButtonClicked(@NotNull String roomCode) {
+    firebaseManager.registerNewListenerForRoom(Long.parseLong(roomCode), new FirebaseManager.CloudAnchorIdListener() {
+      @Override
+      public void onNewCloudAnchorId(String cloudAnchorId) {
+        header.setText(roomCode);
+        Anchor resolvedAnchor = arFragment.getArSceneView().getSession().resolveCloudAnchor(cloudAnchorId);
+        setCloudAnchor(resolvedAnchor);
+        setUpRendering(resolvedAnchor);
+        anchorState = AnchorState.Searching.INSTANCE;
+      }
+
+      @Override
+      public void onSetMemo(String memo, String cloudAnchorId) {
+        inputText.setText(memo);
+      }
+    });
+  }
+
+  @Override
+  public void onEditTextPositiveButtonClicked(@NotNull String text) {
+    editorMemo = text;
+    inputText.setText(editorMemo);
   }
 }

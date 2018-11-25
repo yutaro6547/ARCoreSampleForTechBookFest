@@ -26,13 +26,13 @@ public class FirebaseManager {
 
   interface CloudAnchorIdListener {
     void onNewCloudAnchorId(String cloudAnchorId);
+    void onSetMemo(String memo, String cloudAnchorId);
   }
 
   private static final String ROOT_FIREBASE_SPOTS = "spot_list";
   private static final String ROOT_LAST_ROOM_CODE = "last_room_code";
-  private static final String KEY_DISPLAY_NAME = "display_name";
   private static final String KEY_ANCHOR_ID = "hosted_anchor_id";
-  private static final String KEY_TIMESTAMP = "timestamp";
+  private static final String KEY_MEMO = "memo";
 
 
   private final FirebaseApp app;
@@ -85,11 +85,11 @@ public class FirebaseManager {
     );
   }
 
-  void storeAnchorIdInRoom(Long roomCode, String cloudAnchorId) {
+  void storeAnchorIdInRoom(Long roomCode, String cloudAnchorId, String memo) {
     Preconditions.checkNotNull(app, "Firebase App was null");
     DatabaseReference roomRef = hotspotListRef.child(String.valueOf(roomCode));
     roomRef.child(KEY_ANCHOR_ID).setValue(cloudAnchorId);
-    roomRef.child(KEY_TIMESTAMP).setValue(System.currentTimeMillis());
+    roomRef.child(KEY_MEMO).setValue(memo);
   }
 
   void registerNewListenerForRoom(Long roomCode, CloudAnchorIdListener listener) {
@@ -101,10 +101,13 @@ public class FirebaseManager {
           @Override
           public void onDataChange(DataSnapshot dataSnapshot) {
             Object valObj = dataSnapshot.child(KEY_ANCHOR_ID).getValue();
-            if (valObj != null) {
+            Object valMemo = dataSnapshot.child(KEY_MEMO).getValue();
+            if (valObj != null && valMemo != null) {
               String anchorId = String.valueOf(valObj);
+              String memoText = String.valueOf(valMemo);
               if (!anchorId.isEmpty()) {
                 listener.onNewCloudAnchorId(anchorId);
+                listener.onSetMemo(memoText, anchorId);
               }
             }
           }
